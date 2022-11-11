@@ -7,15 +7,29 @@ from ctypes import sizeof
 import socket
 import json
 import sys
+from typing import Dict
 
+# self.DATA is a Dict of all data that will be sent to server
+# self.TYPE only defaults to 'CODE_DATA' for the moment,
+#  but will be used for CODE_STOP and CODE_END and any others
 class JSON_DATA:
-    def __init__(self, TYPE='CODE_DATA', DATA={}):
+    CODES = [
+        'CODE_DATA',
+        'CODE_STOP',
+        'CODE_END'
+    ]
+
+    def __init__(self, CODE='CODE_DATA', DATA={}):
+        if CODE not in self.CODES:
+            return f'{CODE} is a bad CODE, must be in {self.CODES}'
+        if type(DATA) is not Dict:
+            return f'{type(DATA)} is not of type {type(Dict)}'
         try:
-            self.TYPE = TYPE
+            self.CODE = CODE
             self.DATA = DATA
             self.SIZE = sys.getsizeof(self.DATA)
         except Exception as e:
-            return (Exception, e)
+            return e
         return True
 
     def bundle(self):
