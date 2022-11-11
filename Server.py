@@ -15,7 +15,7 @@ class SERVER:
         self.COUNT = 0
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.CLOSE = False
-    
+
     def main(self):
             self.SOCKET.bind((self.HOST, self.PORT))
             self.SOCKET.listen()
