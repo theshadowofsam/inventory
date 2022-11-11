@@ -10,8 +10,6 @@ import sys
 from typing import Dict
 
 # self.DATA is a Dict of all data that will be sent to server
-# self.TYPE only defaults to 'CODE_DATA' for the moment,
-#  but will be used for CODE_STOP and CODE_END and any others
 class JSON_DATA:
     CODES = [
         'CODE_DATA',
@@ -29,12 +27,11 @@ class JSON_DATA:
         self.SIZE = sys.getsizeof(self.DATA)
 
     def bundle(self):
-        return json.dumps(self.TYPE, self.SIZE, self.DATA)
+        return json.dumps([self.CODE, self.SIZE, self.DATA])
 
-    def bundle_new(self, TYPE, DATA):
+    def bundle_new(self, CODE, DATA):
         SIZE = sys.getsizeof(DATA)
-        data = json.dumps(TYPE, SIZE, DATA)
-        return data
+        return json.dumps(CODE, SIZE, DATA)
 
     def size(self):
         self.SIZE = sys.getsizeof(self.DATA)
