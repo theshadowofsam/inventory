@@ -21,9 +21,9 @@ class JSON_DATA:
 
     def __init__(self, CODE='CODE_DATA', DATA={}):
         if CODE not in self.CODES:
-            return f'{CODE} is a bad CODE, must be in {self.CODES}'
-        if type(DATA) is not Dict:
-            return f'{type(DATA)} is not of type {type(Dict)}'
+            return f'{CODE} is a bad CODE, must be a string in {self.CODES}'
+        if type(DATA) != type({}):
+            return f'{type(DATA)} is not of type {type({})}'
         try:
             self.CODE = CODE
             self.DATA = DATA
