@@ -16,7 +16,7 @@ class SERVER:
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.CLOSE = False
 
-    def main(self):
+    def run(self):
             self.SOCKET.bind((self.HOST, self.PORT))
             self.SOCKET.listen()
             self.SOCKET.settimeout(2)
@@ -53,4 +53,4 @@ class SERVER:
 
 if __name__ == "__main__":
     s = SERVER()
-    s.main()
+    s.run()
