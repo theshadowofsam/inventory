@@ -3,13 +3,28 @@ Samuel Lee
 Client.py
 11/09/2022
 """
+from ctypes import sizeof
 import socket
 import json
-import time
+import sys
 
 class JSON_DATA:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, TYPE='CODE_DATA', DATA={}):
+        try:
+            self.TYPE = TYPE
+            self.DATA = DATA
+            self.SIZE = sys.getsizeof(self.DATA)
+        except Exception as e:
+            return (Exception, e)
+        return True
+
+    def bundle(self):
+        return json.dumps(self.TYPE, self.SIZE, self.DATA)
+
+    def bundle_new(self, TYPE, DATA):
+        SIZE = sys.getsizeof(DATA)
+        data = json.dumps(TYPE, SIZE, DATA)
+        return data
 
 class SOCK_CONN:
     def __init__(self) -> None:
