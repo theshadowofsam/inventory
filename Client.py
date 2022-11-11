@@ -19,18 +19,14 @@ class JSON_DATA:
         'CODE_END'
     ]
 
-    def __init__(self, CODE='CODE_DATA', DATA={}):
+    def __init__(self, CODE='CODE_DATA', DATA={}) -> None:
         if CODE not in self.CODES:
-            return f'{CODE} is a bad CODE, must be a string in {self.CODES}'
+            raise ValueError(f'{CODE} is a bad CODE, must be a string in {self.CODES}')
         if type(DATA) != type({}):
-            return f'{type(DATA)} is not of type {type({})}'
-        try:
-            self.CODE = CODE
-            self.DATA = DATA
-            self.SIZE = sys.getsizeof(self.DATA)
-        except Exception as e:
-            return e
-        return True
+            raise TypeError(f'DATA type:{type(DATA)} is of incorrect type, should be Dict')    
+        self.CODE = CODE
+        self.DATA = DATA
+        self.SIZE = sys.getsizeof(self.DATA)
 
     def bundle(self):
         return json.dumps(self.TYPE, self.SIZE, self.DATA)
@@ -39,6 +35,10 @@ class JSON_DATA:
         SIZE = sys.getsizeof(DATA)
         data = json.dumps(TYPE, SIZE, DATA)
         return data
+
+    def size(self):
+        self.SIZE = sys.getsizeof(self.DATA)
+        return self.SIZE
 
 class SOCK_CONN:
     def __init__(self) -> None:
