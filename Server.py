@@ -6,6 +6,7 @@ Server.py
 import socket
 import multiprocessing
 import json
+import sys
 
 class SERVER:
     def __init__(self):
@@ -42,14 +43,18 @@ class SERVER:
     def handle_connection(self, conn, addr):
         while True:
             data = conn.recv(4096)
-            print(data.decode('utf-8'))
-            print(f'CLOSE = {self.CLOSE}')
-            if data.decode('utf-8') == ('CODE_END'):
+            if data.decode() == 'CODE_END':
                 print('end')
                 break
-            if data.decode('utf-8') == ('CODE_CLOSE'):
+            elif data.decode() == 'CODE_CLOSE':
                 self.CLOSE = True
                 print('close')
+                break
+            elif data.decode() == 'CODE_DATA':
+                more_data = conn.recv(4096)
+                print(json.loads(more_data.decode()))
+            else:
+                print("received something weird, stopping")
                 break
         conn.close()
         return 1
