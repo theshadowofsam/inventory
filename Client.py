@@ -24,7 +24,7 @@ class JSON_DATA:
             raise TypeError(f'DATA type:{type(DATA)} is of incorrect type, should be Dict')    
         self.CODE = CODE
         self.DATA = DATA
-        self.SIZE = sys.getsizeof(self.DATA)
+        self.SIZE = sys.getsizeof(DATA)
 
     def bundle(self):
         return json.dumps([self.CODE, self.SIZE, self.DATA])
@@ -48,15 +48,19 @@ class SOCK_CONN:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.HOST, self.PORT))
             while True:
+                sendable = {}
                 t = input("Enter text to send: ")
+                sendable['t'] = t
                 if t == self.CODE_END:
                     s.send(b'CODE_END')
                     break
-                if t == self.CODE_CLOSE:
+                elif t == self.CODE_CLOSE:
                     s.send(b'CODE_CLOSE')
                     break
                 else:
-                    s.send(t.encode())
+                    s.send(b'CODE_DATA')
+                    data = JSON_DATA('CODE_DATA', sendable)
+                    s.send(data.bundle().encode())                    
             s.close()
 
 if __name__ == "__main__":
