@@ -3,11 +3,9 @@ Samuel Lee
 Client.py
 11/09/2022
 """
-from ctypes import sizeof
 import socket
 import json
 import sys
-from typing import Dict
 
 # self.DATA is a Dict of all data that will be sent to server
 class JSON_DATA:
@@ -50,7 +48,6 @@ class SOCK_CONN:
             while True:
                 sendable = {}
                 t = input("Enter text to send: ")
-                sendable['t'] = t
                 if t == self.CODE_END:
                     s.send(b'CODE_END')
                     break
@@ -59,6 +56,7 @@ class SOCK_CONN:
                     break
                 else:
                     s.send(b'CODE_DATA')
+                    sendable['t'] = t
                     data = JSON_DATA('CODE_DATA', sendable)
                     s.send(data.bundle().encode())                    
             s.close()
