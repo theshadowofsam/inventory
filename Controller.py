@@ -32,7 +32,7 @@ class JSON_HANDLER:
         except FileNotFoundError as e:
             self._generate()
 
-    def _generate(self):
+    def _generate(self, filename=None):
         pass
 
     def load(self):
