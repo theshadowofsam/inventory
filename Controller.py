@@ -8,7 +8,7 @@ import socket
 import sys
 import os
 
-# warehouse of aisles of rows of slots of items
+# warehouse of aisles of rows of slots of item
 class WAREHOUSE:
     class _AISLE:
         def __init__(self, name='', contents=[]) -> None:
@@ -46,6 +46,7 @@ class JSON_HANDLER:
     ]
 
     FILENAME = 'WAREHOUSE.txt'
+    YN = ['y', 'n']
 
     def __init__(self) -> None:
         try:
@@ -58,15 +59,29 @@ class JSON_HANDLER:
         print(self.warehouse)
         print(self.warehouse.name, '\n', self.warehouse.contents)
         
-
+    #prompts user for warehouse information and creates warehouse object
     def _generate(self, fd):
-        warehouse = {
-            'name': 'warehouse',
-            'contents': {}
-        }
+        name = input('Enter a name for the warehouse: ')
+        while True:
+            try:
+                num_aisles = int(input('Enter the amount of aisles you want in the warehouse (minimum 1): '))
+                if num_aisles <= 0:
+                    raise ValueError('There must be at least 1 aisle')
+            except ValueError as e:
+                print('ValueError:', e)
+                continue
+            break
+        
+        #TODO do same as above for rows in aisles, slots in rows, don't populate items
 
-        with open(fd, 'w') as f:
-            json.dump(warehouse, f, indent="\t",)
+        #TODO create warehouse object and make a method for dumping to file 
+        # warehouse = {
+        #     'name': name,
+        #     'contents': {}
+        # }
+
+        # with open(fd, 'w') as f:
+        #     json.dump(warehouse, f, indent="\t",)
 
 
     def load(self):
