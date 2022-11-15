@@ -8,8 +8,29 @@ import socket
 import sys
 import os
 
+# warehouse of aisles of rows of slots of items
 class WAREHOUSE:
-    def __init__(self, name='', contents={}) -> None:
+    class _AISLE:
+        def __init__(self, name='', contents=[]) -> None:
+            self.name = name
+            self.contents = contents
+
+    class _ROW:
+        def __init__(self, name='', contents=[]) -> None:
+            self.name = name
+            self.contents = contents
+
+    class _SLOT:
+        def __init__(self, name='', item=None) -> None:
+            self.name = name
+            self.item = item
+
+    class _ITEM:
+        def __init__(self, name='', amount=0) -> None:
+            self.name = name
+            self.amount = amount
+
+    def __init__(self, name='', contents=[]) -> None:
         self.name = name
         self.contents = contents
 
@@ -32,9 +53,10 @@ class JSON_HANDLER:
                 pass
         except FileNotFoundError as e:
             self._generate(self.FILENAME)
-        self.warehouse = WAREHOUSE(self.load())
+        name, contents = self.load()
+        self.warehouse = WAREHOUSE(name, contents)
         print(self.warehouse)
-        print(self.warehouse['name'], '\n', self.warehouse['content'])
+        print(self.warehouse.name, '\n', self.warehouse.contents)
         
 
     def _generate(self, fd):
