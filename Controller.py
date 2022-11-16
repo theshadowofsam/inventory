@@ -10,13 +10,20 @@ import os
 
 # warehouse of aisles of rows of slots of item
 class WAREHOUSE:
-    def __init__(self, name='', aisles=[]) -> None:
-        self.name = name
-        self.aisles = aisles
+    def __init__(self, name=None, aisles=None) -> None:
+        if name is None:
+            self.name = ''
+        else:
+            self.name = name
+        if aisles is None:
+            self.aisles = []
+        else:
+            self.aisles = aisles
     
     def add_aisle(self, isle_name):
         temp = self._AISLE(isle_name)
         self.aisles.append(temp)
+        return temp
 
     class _AISLE:
         def __init__(self, name, rows=None) -> None:
@@ -29,6 +36,7 @@ class WAREHOUSE:
         def add_row(self, row_name):
             temp = WAREHOUSE._ROW(row_name)
             self.rows.append(temp)
+            return temp
 
     class _ROW:
         def __init__(self, name, slots=None) -> None:
@@ -41,6 +49,7 @@ class WAREHOUSE:
         def add_slot(self, slot_name):
             temp = WAREHOUSE._SLOT(slot_name)
             self.slots.append(temp)
+            return temp
 
     class _SLOT:
         def __init__(self, name, item=None) -> None:
@@ -50,6 +59,7 @@ class WAREHOUSE:
         def add_item(self, item_name, amount):
             temp = WAREHOUSE._ITEM(item_name, amount)
             self.item = temp
+            return temp
 
     class _ITEM:
         def __init__(self, name, amount=None) -> None:
@@ -82,11 +92,10 @@ class JSON_HANDLER:
             self._generate(self.FILENAME)
             self.dump()
         else:    
-            name, contents = self.load()
-            self.warehouse = WAREHOUSE(name, contents)
-            print(self.warehouse)
-            print(self.warehouse.name, '\n', self.warehouse.contents)
-            
+            self.warehouse = WAREHOUSE()
+            self.load()
+            self.dump()
+
     #prompts user for warehouse information and creates warehouse object
     def _generate(self, fd):
         
@@ -177,11 +186,28 @@ class JSON_HANDLER:
             for row in aisle.rows:
                 print('\t\t', len(row.slots))
 
-    #TODO
+    # translate to allow json to read in
     def load(self):
-        pass
+        with open(self.FILENAME, 'r') as f:
+            data = json.load(f)
+            print(data)
+            self.warehouse.name = data['name']
+            aisles = data['aisles']
+            for aisle in aisles.keys():
+                aisle_ref = self.warehouse.add_aisle(aisle)
+                aisle_ref.rows = []
+                rows = aisles[aisle]
+                for row in rows.keys():
+                    row_ref = aisle_ref.add_row(row)
+                    row_ref.slots = []
+                    slots = rows[row]
+                    for slot in slots.keys():
+                        slot_ref = row_ref.add_slot(slot)
+                        slot_ref.item = None
+                        if slots[slot] is not None:
+                            item_ref = slot_ref.add_item(slots[slot]['name'], slots[slot]['amount'])    
 
-    #translate to allow json to write out
+    # translate to allow json to write out
     def dump(self):
         warehouse = {'name': self.warehouse.name}
         aisles = {}
