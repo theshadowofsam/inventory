@@ -231,7 +231,7 @@ class JSON_HANDLER:
         with open(self.FILENAME, 'w') as f:
             json.dump(warehouse, f, indent='\t')
 
-
+#TODO inside
 class SERVER:
     def __init__(self, HOST=None, PORT=None) -> None:
         self.CONN = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -243,12 +243,13 @@ class SERVER:
             self.PORT = 47469
         else:
             self.PORT = PORT
-        self.JSON_HANDLER = JSON_HANDLER()
+        self.json_handler = JSON_HANDLER()
 
     def run(self):
         self.CONN.bind((self.HOST, self.PORT))
         self.CONN.listen()
 
+        #TODO handle connections CONSECUTIVELY
         while True:
             conn, addr = self.CONN.accept()
             conn.close()
