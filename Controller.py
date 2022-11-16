@@ -84,6 +84,7 @@ class JSON_HANDLER:
         except FileNotFoundError as e:
             self.warehouse = WAREHOUSE()
             self._generate(self.FILENAME)
+            self.dump()
         else:    
             name, contents = self.load()
             self.warehouse = WAREHOUSE(name, contents)
@@ -95,6 +96,7 @@ class JSON_HANDLER:
         
         #_AISLES info
         name = input('Enter a name for the warehouse: ')
+        self.warehouse.name = name
         while True:
             try:
                 num_aisles = int(input('Enter the amount of aisles you want in the warehouse (minimum 1): '))
@@ -183,9 +185,29 @@ class JSON_HANDLER:
     def load(self):
         pass
 
-    #TODO
+    #translate to allow json to write out
     def dump(self):
-        pass
+        warehouse = {'name': self.warehouse.name}
+        aisles = {}
+        for aisle in self.warehouse.aisles:
+            rows = {}
+            for row in aisle.rows:
+                slots = {}
+                for slot in row.slots:
+                    if slot.item is None:
+                        slots[slot.name] = None
+                    else:
+                        item = {}
+                        item['name'] = slot.name                    
+                        item['amount'] = slot.amount
+                        slots[slot.name] = item
+                rows[row.name] = slots
+            aisles[aisle.name] = rows
+        
+        warehouse['aisles'] = aisles
+
+        with open(self.FILENAME, 'w') as f:
+            json.dump(warehouse, f, indent='\t')
 
 
 if __name__ == '__main__':
