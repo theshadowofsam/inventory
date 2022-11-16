@@ -18,7 +18,6 @@ class WAREHOUSE:
         temp = self._AISLE(isle_name)
         self.aisles.append(temp)
 
-
     class _AISLE:
         def __init__(self, name, rows=None) -> None:
             self.name = name
@@ -30,7 +29,6 @@ class WAREHOUSE:
         def add_row(self, row_name):
             temp = WAREHOUSE._ROW(row_name)
             self.rows.append(temp)
-
 
     class _ROW:
         def __init__(self, name, slots=None) -> None:
@@ -44,7 +42,6 @@ class WAREHOUSE:
             temp = WAREHOUSE._SLOT(slot_name)
             self.slots.append(temp)
 
-
     class _SLOT:
         def __init__(self, name, item=None) -> None:
             self.name = name
@@ -53,7 +50,6 @@ class WAREHOUSE:
         def add_item(self, item_name, amount):
             temp = WAREHOUSE._ITEM(item_name, amount)
             self.item = temp
-
 
     class _ITEM:
         def __init__(self, name, amount=None) -> None:
