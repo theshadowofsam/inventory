@@ -165,7 +165,7 @@ class JSON_HANDLER:
                 for row in aisle.rows:
                     while True:
                         try:
-                            num_slots = int(input('Enter the number of slots for all rows (minimum 1): '))
+                            num_slots = int(input(f'Enter the number of slots for {row.name} (minimum 1): '))
                             break
                         except ValueError as e:
                             print(f'Bad input: {e}')
