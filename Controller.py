@@ -7,6 +7,7 @@ import json
 import socket
 import sys
 import os
+from multiprocessing import Queue, Process
 
 # warehouse of aisles of rows of slots of item
 class WAREHOUSE:
@@ -79,7 +80,6 @@ class JSON_HANDLER:
         'CODE_REPLACE',
         'CODE_SET'
     ]
-
     FILENAME = 'WAREHOUSE.txt'
     YN = ['y', 'n']
 
@@ -230,6 +230,28 @@ class JSON_HANDLER:
 
         with open(self.FILENAME, 'w') as f:
             json.dump(warehouse, f, indent='\t')
+
+
+class SERVER:
+    def __init__(self, HOST=None, PORT=None) -> None:
+        self.CONN = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if HOST is None:
+            self.HOST = '127.0.0.1'
+        else:
+            self.HOST = HOST
+        if PORT is None:
+            self.PORT = 47469
+        else:
+            self.PORT = PORT
+        self.JSON_HANDLER = JSON_HANDLER()
+
+    def run(self):
+        self.CONN.bind((self.HOST, self.PORT))
+        self.CONN.listen()
+
+        while True:
+            conn, addr = self.CONN.accept()
+            conn.close()
 
 
 if __name__ == '__main__':
