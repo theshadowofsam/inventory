@@ -81,7 +81,7 @@ class JSON_HANDLER:
         'CODE_SET'
     ]
     FILENAME = 'WAREHOUSE.txt'
-    YN = ['y', 'n']
+    YES_NO = ['y', 'n']
 
     def __init__(self) -> None:
         try:
@@ -108,7 +108,7 @@ class JSON_HANDLER:
                 if num_aisles <= 0:
                     raise ValueError('There must be at least 1 aisle')
             except ValueError as e:
-                print('ValueError:', e)
+                print('ValueError: ', e)
                 continue
             break
         
@@ -118,13 +118,13 @@ class JSON_HANDLER:
         
         #ADD ROWS
         while True:
-            eq = input('Will all aisles have the same amount of rows?(y/n):')[0].lower()
-            if eq in self.YN:
+            all_equivalent = input('Will all aisles have the same amount of rows?(y/n):')[0].lower()
+            if all_equivalent in self.YES_NO:
                 break
             else:
                 print('Bad input: please enter y or n')
 
-        if eq == 'y':
+        if all_equivalent == 'y':
             while True:
                 try:
                     num_rows = int(input('Enter the number of rows for all aisles (minimum 1): '))
@@ -138,23 +138,24 @@ class JSON_HANDLER:
                     aisle.add_row(f'{i+1}')
         else:
              for aisle in self.warehouse.aisles:
-                try:
-                    num_rows = int(input(f'Enter the number of rows for aisle {aisle.name}: '))
-                    for i in range(num_rows):
-                        aisle.add_row(f'{i+1}')
-                except ValueError as e:
-                    print(f'Bad input: {e}')
-                    continue
+                while True:
+                    try:
+                        num_rows = int(input(f'Enter the number of rows for aisle {aisle.name}: '))
+                        for i in range(num_rows):
+                            aisle.add_row(f'{i+1}')
+                    except ValueError as e:
+                        print(f'Bad input: {e}')
+                        continue
         
         #ADD SLOTS
         while True:
-            eq = input('Will all aisles and rows have the same amount of slots?(y/n):')[0].lower()
-            if eq in self.YN:
+            all_equivalent = input('Will all aisles and rows have the same amount of slots?(y/n):')[0].lower()
+            if all_equivalent in self.YES_NO:
                 break
             else:
                 print('Bad input: please enter y or n')
 
-        if eq == 'y':
+        if all_equivalent == 'y':
             while True:
                 try:
                     num_slots = int(input('Enter the number of slots for all rows (minimum 1): '))
