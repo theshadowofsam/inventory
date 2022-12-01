@@ -234,6 +234,7 @@ class JSON_HANDLER:
         with open(self.FILENAME, 'w') as f:
             json.dump(warehouse, f, indent='\t')
 
+
 #TODO inside
 class SERVER:
     def __init__(self, HOST=None, PORT=None) -> None:
@@ -256,6 +257,21 @@ class SERVER:
         while True:
             conn, addr = self.CONN.accept()
             conn.close()
+    
+    def handle(self, request_type, client_id):
+        match request_type:
+            case 'CODE_QUERY':
+                pass
+            case 'CODE_PULL':
+                pass
+            case 'CODE_PUSH':
+                pass
+            case 'CODE_EMPTY':
+                pass
+            case 'CODE_REPLACE':
+                pass
+            case 'CODE_SET':
+                pass
 
 
 if __name__ == '__main__':
