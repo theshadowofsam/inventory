@@ -96,10 +96,10 @@ class JSON_HANDLER:
             self.load()
             self.dump()
 
-    #prompts user for warehouse information and creates warehouse object
+    # prompts user for warehouse information and creates warehouse object
     def _generate(self, fd):
         
-        #_AISLES info
+        # aisle info
         name = input('Enter a name for the warehouse: ')
         self.warehouse.name = name
         while True:
@@ -112,18 +112,19 @@ class JSON_HANDLER:
                 continue
             break
         
-        #ADD AISLES
+        # add aisles
         for i in range(num_aisles):
             self.warehouse.add_aisle(f'{i+1}')
         
-        #ADD ROWS
+        # row info
         while True:
             all_equivalent = input('Will all aisles have the same amount of rows?(y/n):')[0].lower()
             if all_equivalent in self.YES_NO:
                 break
             else:
                 print('Bad input: please enter y or n')
-
+        
+        # add rows
         if all_equivalent == 'y':
             while True:
                 try:
@@ -147,7 +148,7 @@ class JSON_HANDLER:
                         print(f'Bad input: {e}')
                         continue
         
-        #ADD SLOTS
+        # slots info
         while True:
             all_equivalent = input('Will all aisles and rows have the same amount of slots?(y/n):')[0].lower()
             if all_equivalent in self.YES_NO:
@@ -155,6 +156,7 @@ class JSON_HANDLER:
             else:
                 print('Bad input: please enter y or n')
 
+        # add slots
         if all_equivalent == 'y':
             while True:
                 try:
