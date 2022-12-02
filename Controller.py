@@ -189,7 +189,7 @@ class JSON_HANDLER:
             for row in aisle.rows:
                 print('\t\t', len(row.slots))
 
-    # translate to allow json to read in
+    # builds the warehouse onject from loaded json object
     def load(self):
         with open(self.FILENAME, 'r') as f:
             data = json.load(f)
@@ -238,7 +238,7 @@ class JSON_HANDLER:
 #TODO inside
 class SERVER:
     def __init__(self, HOST=None, PORT=None) -> None:
-        self.CONN = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if HOST is None:
             self.HOST = '127.0.0.1'
         else:
@@ -250,15 +250,15 @@ class SERVER:
         self.json_handler = JSON_HANDLER()
 
     def run(self):
-        self.CONN.bind((self.HOST, self.PORT))
-        self.CONN.listen()
+        self.SOCKET.bind((self.HOST, self.PORT))
+        self.SOCKET.listen()
 
         #TODO handle connections CONSECUTIVELY
         while True:
-            conn, addr = self.CONN.accept()
-            conn.close()
+            connection, address = self.SOCKET.accept()
+            connection.close()
     
-    def handle(self, request_type, client_id):
+    def handle(self, request_type, client_address):
         match request_type:
             case 'CODE_QUERY':
                 pass
