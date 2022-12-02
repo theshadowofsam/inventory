@@ -7,7 +7,6 @@ import json
 import socket
 import sys
 import os
-from multiprocessing import Queue, Process
 
 # warehouse of aisles of rows of slots of item
 class WAREHOUSE:
@@ -272,6 +271,7 @@ class SERVER:
 
     def __init__(self, HOST=None, PORT=None) -> None:
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.SOCKET.settimeout(0)
         if HOST is None:
             self.HOST = '127.0.0.1'
         else:
@@ -281,19 +281,29 @@ class SERVER:
         else:
             self.PORT = PORT
         self.json_handler = JSON_HANDLER()
-        self.processes = {}
-        self.request_queue = Queue()
+        self.active_connection = None
 
     def run(self):
         self.SOCKET.bind((self.HOST, self.PORT))
         self.SOCKET.listen()
 
-        #TODO handle connections CONSECUTIVELY
         while True:
-            connection, address = self.SOCKET.accept()
-            connection.close()
-    
-    def handle(self, connection, client_address, request_type):
+            try:
+                connection, address = self.SOCKET.accept()
+                connection.settimeout(None)
+                self.active_connection = connection
+            except TimeoutError as e:
+                continue
+            with connection as conn:
+                while True:
+                    request = conn.recv(1024).decode()
+                    if request in self.REQUEST_CODES:
+                        response = self.handle()
+                        conn.send(response)
+
+    #TODO cases
+    def handle(self, request_type, data=None):
+        return(b'GOOD')
         match request_type:
             case 'CODE_QUERY': # return slot data. perhaps warehouse, aisle, or row too?
                 pass
@@ -310,7 +320,6 @@ class SERVER:
             case _:
                 # bad request
                 pass
-
 
 if __name__ == '__main__':
     handler = JSON_HANDLER()
