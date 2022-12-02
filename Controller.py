@@ -57,29 +57,53 @@ class WAREHOUSE:
             self.name = name
             self.item = item
 
-        def add_item(self, item_name, amount):
-            temp = WAREHOUSE._ITEM(item_name, amount)
+        def add_item(self, item_name, quantity):
+            temp = WAREHOUSE._ITEM(item_name, quantity)
             self.item = temp
             return temp
 
     class _ITEM:
-        def __init__(self, name, amount=None) -> None:
+        def __init__(self, name, quantity=None) -> None:
             self.name = name
-            if amount is None:
-                self.amount = 0
+            if quantity is None:
+                self.quantity = 0
             else:
-                self.amount = amount
+                self.quantity = quantity
+    
+    def query(self, aisle=None, row=None, slot=None):
+        if aisle is None:
+            pass
+        elif row is None:
+            pass
+        elif slot is None:
+            pass
+        else:
+            pass
+
+    def pull(self, aisle, row, slot, quantity):
+        pass
+
+    def push(self, aisle, row, slot, quantity):
+        pass
+
+    def empty(self, aisle=None, row=None, slot=None):
+        if aisle is None:
+            pass
+        elif row is None:
+            pass
+        elif slot is None:
+            pass
+        else:
+            pass
+
+    def replace(self, aisle, row, slot, new_item):
+        pass
+
+    def set(self, aisle, row, slot, item):
+        pass
 
 
 class JSON_HANDLER:
-    REQUEST_CODES = [
-        'CODE_QUERY',
-        'CODE_PULL',
-        'CODE_PUSH',
-        'CODE_EMPTY',
-        'CODE_REPLACE',
-        'CODE_SET'
-    ]
     FILENAME = 'WAREHOUSE.txt'
     YES_NO = ['y', 'n']
 
@@ -208,7 +232,7 @@ class JSON_HANDLER:
                         slot_ref = row_ref.add_slot(slot)
                         slot_ref.item = None
                         if slots[slot] is not None:
-                            item_ref = slot_ref.add_item(slots[slot]['name'], slots[slot]['amount'])    
+                            item_ref = slot_ref.add_item(slots[slot]['name'], slots[slot]['quantity'])    
 
     # translate to allow json to write out
     def dump(self):
@@ -224,7 +248,7 @@ class JSON_HANDLER:
                     else:
                         item = {}
                         item['name'] = slot.name                    
-                        item['amount'] = slot.amount
+                        item['quantity'] = slot.quantity
                         slots[slot.name] = item
                 rows[row.name] = slots
             aisles[aisle.name] = rows
@@ -237,6 +261,15 @@ class JSON_HANDLER:
 
 #TODO inside
 class SERVER:
+    REQUEST_CODES = [
+        'CODE_QUERY',
+        'CODE_PULL',
+        'CODE_PUSH',
+        'CODE_EMPTY',
+        'CODE_REPLACE',
+        'CODE_SET'
+    ]
+
     def __init__(self, HOST=None, PORT=None) -> None:
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if HOST is None:
@@ -248,6 +281,8 @@ class SERVER:
         else:
             self.PORT = PORT
         self.json_handler = JSON_HANDLER()
+        self.processes = {}
+        self.request_queue = Queue()
 
     def run(self):
         self.SOCKET.bind((self.HOST, self.PORT))
@@ -258,19 +293,22 @@ class SERVER:
             connection, address = self.SOCKET.accept()
             connection.close()
     
-    def handle(self, request_type, client_address):
+    def handle(self, connection, client_address, request_type):
         match request_type:
-            case 'CODE_QUERY':
+            case 'CODE_QUERY': # return slot data. perhaps warehouse, aisle, or row too?
                 pass
-            case 'CODE_PULL':
+            case 'CODE_PULL': # pull items from a slot (reduce quantity)
                 pass
-            case 'CODE_PUSH':
+            case 'CODE_PUSH': # place additional items in a slot (increase quantity)
                 pass
-            case 'CODE_EMPTY':
+            case 'CODE_EMPTY': # clear a slot of all values
                 pass
-            case 'CODE_REPLACE':
+            case 'CODE_REPLACE': # same as clear and set for all values
                 pass
-            case 'CODE_SET':
+            case 'CODE_SET': # set a slot value
+                pass
+            case _:
+                # bad request
                 pass
 
 
