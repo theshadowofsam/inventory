@@ -281,7 +281,6 @@ class SERVER:
         else:
             self.PORT = PORT
         self.json_handler = JSON_HANDLER()
-        self.active_connection = None
 
     def run(self):
         self.SOCKET.bind((self.HOST, self.PORT))
@@ -291,7 +290,6 @@ class SERVER:
             try:
                 connection, address = self.SOCKET.accept()
                 connection.settimeout(None)
-                self.active_connection = connection
             except TimeoutError as e:
                 continue
             with connection as conn:
