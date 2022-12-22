@@ -7,59 +7,109 @@ import socket
 import json
 import sys
 
-# self.DATA is a Dict of all data that will be sent to server
+
 class JSON_DATA:
-    CODES = [
-        'CODE_DATA',
-        'CODE_STOP',
-        'CODE_END'
+    CODES = {
+        'CODE_STOP':    'Close the server when all current requests are completed.', 
+        'CODE_END':     'Close your client.',
+        'CODE_QUERY':   'Query a slot in the warehouse.',
+        'CODE_PULL':    'Pull items from an item slot.',
+        'CODE_PUSH':    'Add items to an item slot',
+        'CODE_EMPTY':   'Clear an item slot of all data.',
+        'CODE_REPLACE': 'Replace an item slots data. Same as Empty + Set.',
+        'CODE_SET':     'Set a currently empty item slots data.'
+    }
+    CODE_ORDER = [
+        'CODE_STOP', 
+        'CODE_END',
+        'CODE_QUERY',
+        'CODE_PULL',
+        'CODE_PUSH',
+        'CODE_EMPTY',
+        'CODE_SET',
+        'CODE_REPLACE'        
     ]
 
-    def __init__(self, CODE='CODE_DATA', DATA={}) -> None:
-        if CODE not in self.CODES:
-            raise ValueError(f'{CODE} is a bad CODE, must be a string in {self.CODES}')
-        if type(DATA) != type({}):
-            raise TypeError(f'DATA type:{type(DATA)} is of incorrect type, should be Dict')    
-        self.CODE = CODE
-        self.DATA = DATA
-        self.SIZE = sys.getsizeof(DATA)
+    #!!! Hopefully i can get rid of all of this crap
+    # def __init__(self, CODE='CODE_DATA', DATA={}) -> None:
+    #     if CODE not in self.CODES:
+    #         raise ValueError(f'{CODE} is a bad CODE, must be a string in {self.CODES}')
+    #     if type(DATA) != type({}):
+    #         raise TypeError(f'DATA type:{type(DATA)} is of incorrect type, should be Dict')    
+    #     self.CODE = CODE
+    #     self.DATA = DATA # a Dict of all data that will be sent to server
+    #     self.SIZE = sys.getsizeof(DATA)
 
-    def bundle(self):
-        return json.dumps([self.CODE, self.SIZE, self.DATA])
+    # def bundle(self):
+    #     return json.dumps([self.CODE, self.SIZE, self.DATA])
 
-    def bundle_new(self, CODE, DATA):
-        SIZE = sys.getsizeof(DATA)
-        return json.dumps(CODE, SIZE, DATA)
+    # def bundle_new(self, CODE, DATA):
+    #     SIZE = sys.getsizeof(DATA)
+    #     return json.dumps(CODE, SIZE, DATA)
 
-    def size(self):
-        self.SIZE = sys.getsizeof(self.DATA)
-        return self.SIZE
+    # def size(self):
+    #     self.SIZE = sys.getsizeof(self.DATA)
+    #     return self.SIZE
 
 class SOCK_CONN:
     def __init__(self) -> None:
         self.HOST = '127.0.0.1'
         self.PORT = 47468
-        self.CODE_CLOSE = 'CODE_CLOSE'
+        self.CODE_STOP = 'CODE_STOP'
         self.CODE_END = 'CODE_END'
             
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.HOST, self.PORT))
             while True:
-                sendable = {}
-                t = input("Enter text to send: ")
-                if t == self.CODE_END:
-                    s.send(b'CODE_END')
-                    break
-                elif t == self.CODE_CLOSE:
-                    s.send(b'CODE_CLOSE')
-                    break
-                else:
-                    s.send(b'CODE_DATA')
-                    sendable['t'] = t
-                    data = JSON_DATA('CODE_DATA', sendable)
-                    s.send(data.bundle().encode())                    
+                t = self.user_handler()
+                match t:
+                    case 'CODE_STOP':
+                        s.send(t.encode())
+                        if s.recv(4096).decode() == 'GO':
+                            print('Stopping and closing')
+                            break
+                        response = s.recv(4096)
+                    case 'CODE_END':
+                        s.send(t.encode())
+                        if s.recv(4096).decode() == 'GO':
+                            print('closing')
+                            break
+                        response = s.recv(4096)
+                    case 'CODE_QUERY':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case 'CODE_PULL':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case 'CODE_PUSH':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case 'CODE_EMPTY':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case 'CODE_SET':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case 'CODE_REPLACE':
+                        s.send(t.encode())
+                        response = s.recv(4096)
+                    case _:
+                        print('Bad Sendable')
+                print(response)
             s.close()
+    
+    def user_handler(self) -> str:
+        print('What would you like to do?')
+        for i, code in enumerate(JSON_DATA.CODE_ORDER):
+            print(f'{i}. {JSON_DATA[code]}')
+        while True:
+            rt = input('Enter the number for your request type: ')
+            if rt >= 0 and rt < len(JSON_DATA.CODE_ORDER):
+                break
+            print('Bad input. Please select a valid option.')
+        code = JSON_DATA.CODE_ORDER[rt]
+        return code
 
 if __name__ == "__main__":
     conn = SOCK_CONN()
