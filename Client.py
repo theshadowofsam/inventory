@@ -8,7 +8,7 @@ import json
 import sys
 
 
-class JSON_DATA:
+class REQUEST_CODES:
     CODES = {
         'CODE_STOP':    'Close the server when all current requests are completed.', 
         'CODE_END':     'Close your client.',
@@ -66,34 +66,38 @@ class SOCK_CONN:
                 match t:
                     case 'CODE_STOP':
                         s.send(t.encode())
-                        if s.recv(4096).decode() == 'GO':
-                            print('Stopping and closing')
-                            break
                         response = s.recv(4096)
+                        print(response)
+                        break
                     case 'CODE_END':
                         s.send(t.encode())
-                        if s.recv(4096).decode() == 'GO':
-                            print('closing')
-                            break
                         response = s.recv(4096)
+                        print(response)
+                        break
                     case 'CODE_QUERY':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case 'CODE_PULL':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case 'CODE_PUSH':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case 'CODE_EMPTY':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case 'CODE_SET':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case 'CODE_REPLACE':
                         s.send(t.encode())
                         response = s.recv(4096)
+                        print(response)
                     case _:
                         print('Bad Sendable')
                 print(response)
@@ -101,14 +105,14 @@ class SOCK_CONN:
     
     def user_handler(self) -> str:
         print('What would you like to do?')
-        for i, code in enumerate(JSON_DATA.CODE_ORDER):
-            print(f'{i}. {JSON_DATA[code]}')
+        for i, code in enumerate(REQUEST_CODES.CODE_ORDER):
+            print(f'{i}. {REQUEST_CODES.CODES[code]}')
         while True:
-            rt = input('Enter the number for your request type: ')
-            if rt >= 0 and rt < len(JSON_DATA.CODE_ORDER):
+            rt = int(input('Enter the number for your request type: '))
+            if rt >= 0 and rt < len(REQUEST_CODES.CODE_ORDER):
                 break
             print('Bad input. Please select a valid option.')
-        code = JSON_DATA.CODE_ORDER[rt]
+        code = REQUEST_CODES.CODE_ORDER[rt]
         return code
 
 if __name__ == "__main__":
