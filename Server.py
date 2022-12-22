@@ -36,9 +36,9 @@ class SERVER:
 
     def run(self):
         self.prepare_client_socket()
-        self.connect_controller()
-        self.controller_process = self.spawn_controller_process(self.CONTROLLER_SOCKET)
-        self.controller_process.run()
+        # self.prepare_controller_socket()
+        # self.controller_process = self.spawn_controller_process(self.CONTROLLER_SOCKET)
+        # self.controller_process.run()
         
         while True:
             connection = None
@@ -47,26 +47,33 @@ class SERVER:
             try:
                 connection, address = self.CLIENT_SOCKET.accept()
                 connection.settimeout(None)
-                self.client_processes[address] = (Process(target=self.handle_connection, args=(connection, address)), Queue(maxsize=10))
-            except TimeoutError as e:
+                self.client_processes[address] = (Process(target=self.handle_client_connection, args=(connection, address)), Queue(maxsize=10))
+                self.client_processes[address][0].start()
+            except Exception as e:
                 pass
             
             try:
                 request = self.client_request_queue.get_nowait()
-            except Empty as e:
-                print(type(e), f': {e}')
+                if request == 'CODE_STOP':
+                    print('got CODE_STOP')
+                    break
+                elif request:
+                    print(request)
+            except Empty:
+                pass
 
         self.CLIENT_SOCKET.close()
-        print(f"count = {self.COUNT}")
+        self.CONTROLLER_SOCKET.close()
         return 1
 
-    def handle_connection(self, conn, addr): #TODO needs a rework
+    def handle_client_connection(self, conn, addr): #TODO needs a rework
         while True:
             data = conn.recv(1024).decode()
             if data in self.REQUEST_CODES:
                 print(data)
                 response = f'Got request {data} from {addr}'
                 conn.send(response.encode())
+                self.client_request_queue.put(data)
             else:
                 response = f'Got something weird: {data} from {addr}'
                 conn.send(response.encode())
@@ -95,7 +102,7 @@ class SERVER:
         self.CLIENT_SOCKET.settimeout(0)
         self.CLIENT_SOCKET.listen()
 
-    def connect_controller(self):
+    def prepare_controller_socket(self):
         while True:
             try:
                 self.CONTROLLER_SOCKET.connect(self.HOST)
@@ -105,7 +112,6 @@ class SERVER:
             else:
                 print('Controller Connected...')
                 return 1
-
 
     def cleanup_client_connection(self, address):
         if address in self.client_processes.keys():
