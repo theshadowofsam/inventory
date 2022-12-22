@@ -12,6 +12,8 @@ import sys
 
 class SERVER:
     REQUEST_CODES = [
+        'CODE_STOP',
+        'CODE_END'
         'CODE_QUERY',
         'CODE_PULL',
         'CODE_PUSH',
@@ -25,6 +27,7 @@ class SERVER:
         self.CONTROLLER_PORT = 47469
         self.CONTROLLER_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.CLIENT_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.STOP = False
         self.client_processes = {}
         self.controller_process = None
         self.client_request_queue = Queue(maxsize=500)
@@ -47,9 +50,9 @@ class SERVER:
                 self.client_processes[address] = (Process(target=self.handle_connection, args=(connection, address)), Queue(maxsize=10))
             except TimeoutError as e:
                 pass
+            
             try:
                 request = self.client_request_queue.get_nowait()
-
             except Empty as e:
                 print(type(e), f': {e}')
 
@@ -57,25 +60,17 @@ class SERVER:
         print(f"count = {self.COUNT}")
         return 1
 
-    def handle_connection(self, conn, addr):
+    def handle_connection(self, conn, addr): #TODO needs a rework
         while True:
-            data = conn.recv(1024)
-            if data.decode() == 'CODE_END':
-                print('end')
-                break
-            elif data.decode() == 'CODE_CLOSE':
-                self.CLOSE = True
-                print('close')
-                break
-            elif data.decode() in self.REQUEST_CODES:
-                code = data.decode()
-                conn.send(b'GO')
-                more_data = conn.recv(1024)
-                print(more_data.decode())
+            data = conn.recv(1024).decode()
+            if data in self.REQUEST_CODES:
+                print(data)
+                response = f'Got request {data} from {addr}'
+                conn.send(response.encode())
             else:
-                conn.send(b'BAD_CODE')
-                print("received something weird, retrying.")
-                continue
+                response = f'Got something weird: {data} from {addr}'
+                conn.send(response.encode())
+            break
         conn.close()
         return 1
 
