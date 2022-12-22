@@ -18,8 +18,8 @@ class SERVER:
         'CODE_PULL',
         'CODE_PUSH',
         'CODE_EMPTY',
-        'CODE_REPLACE',
-        'CODE_SET'
+        'CODE_SET',
+        'CODE_REPLACE'
     ]
     def __init__(self):
         self.HOST = '127.0.0.1'
@@ -32,7 +32,7 @@ class SERVER:
         self.controller_process = None
         self.client_request_queue = Queue(maxsize=500)
         self.controller_send_queue = Queue(maxsize=500)
-        self.controller_recieve_queue = Queue(maxsize=500)
+        self.controller_receive_queue = Queue(maxsize=500)
 
     def run(self):
         self.prepare_client_socket()
@@ -54,11 +54,29 @@ class SERVER:
             
             try:
                 request = self.client_request_queue.get_nowait()
-                if request == 'CODE_STOP':
-                    print('got CODE_STOP')
-                    break
-                elif request:
-                    print(request)
+                match request[0]:
+                    case 'CODE_STOP':
+                        print('got CODE_STOP. Shutting down...')
+                        break
+                    case 'CODE_END':
+                        print(f'{request[1]} ended their connection.')
+                    case 'CODE_QUERY':
+                        print(f'{request[1]} want to know what is in a slot')
+                    case 'CODE_PULL':
+                        print(f'{request[1]} wants to pull from a slot.')
+                    case 'CODE_PUSH':
+                        print(f'{request[1]} wants to put items in a slot.')
+                    case 'CODE_EMPTY':
+                        print(f'{request[1]} wants to empty a slot.')
+                    case 'CODE_SET':
+                        print(f'{request[1]} wants to set the data for a slot.')
+                    case 'CODE_REPLACE':
+                        print(f'{request[1]} wants to replace a slot.')
+                    case 'CLEANUP':
+                        print(f'Cleaning up {request[1]}')
+                        self.cleanup_client_connection(request[1])
+                    case _:
+                        print(f'got something else from {request[1]}: {request[0]}')
             except Empty:
                 pass
 
@@ -70,15 +88,16 @@ class SERVER:
         while True:
             data = conn.recv(1024).decode()
             if data in self.REQUEST_CODES:
-                print(data)
                 response = f'Got request {data} from {addr}'
                 conn.send(response.encode())
-                self.client_request_queue.put(data)
+                self.client_request_queue.put([data, addr])
             else:
                 response = f'Got something weird: {data} from {addr}'
                 conn.send(response.encode())
-            break
+            if data == 'CODE_STOP' or data == 'CODE_END':
+                break
         conn.close()
+        self.client_request_queue.put(['CLEANUP', addr])
         return 1
 
     def spawn_controller_process(self, controller_socket):
@@ -93,7 +112,7 @@ class SERVER:
             except Empty:
                 pass
             try:
-                receive = self.controller_recieve_queue.get_nowait()
+                receive = self.controller_receive_queue.get_nowait()
             except Empty:
                 pass
 
