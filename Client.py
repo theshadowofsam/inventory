@@ -67,37 +67,29 @@ class SOCK_CONN:
                     case 'CODE_STOP':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                         break
                     case 'CODE_END':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                         break
                     case 'CODE_QUERY':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case 'CODE_PULL':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case 'CODE_PUSH':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case 'CODE_EMPTY':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case 'CODE_SET':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case 'CODE_REPLACE':
                         s.send(t.encode())
                         response = s.recv(4096)
-                        print(response)
                     case _:
                         print('Bad Sendable')
                 print(response)
