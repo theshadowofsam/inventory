@@ -13,7 +13,7 @@ import sys
 class SERVER:
     REQUEST_CODES = [
         'CODE_STOP',
-        'CODE_END'
+        'CODE_END',
         'CODE_QUERY',
         'CODE_PULL',
         'CODE_PUSH',
