@@ -9,6 +9,17 @@ from queue import Empty
 import json
 import sys
 
+class REQUEST:
+    def __init__(self, info) -> None: # info is a list of information from SERVER.client_request_queue, created by SERVER.handle_client_connection()
+        self.code = info[0]
+        self.address = info[1]
+        self.data = None
+        if len(info) > 2:
+            self.data = info[2]
+    
+    def sendify(self): # jsonify
+        sendable = f'[{self.code}, {self.address}, {self.data}]'
+        return sendable.encode()
 
 class SERVER:
     REQUEST_CODES = [
@@ -21,6 +32,7 @@ class SERVER:
         'CODE_SET',
         'CODE_REPLACE'
     ]
+
     def __init__(self):
         self.HOST = '127.0.0.1'
         self.PORT = 47468
@@ -44,47 +56,29 @@ class SERVER:
             connection = None
             address = None
             request = None
-            try:
-                connection, address = self.CLIENT_SOCKET.accept()
-                connection.settimeout(None)
-                self.client_processes[address] = (Process(target=self.handle_client_connection, args=(connection, address)), Queue(maxsize=10))
-                self.client_processes[address][0].start()
-            except Exception as e:
-                pass
+            
+            if not self.STOP:
+                try:
+                    connection, address = self.CLIENT_SOCKET.accept()
+                    connection.settimeout(None)
+                    self.client_processes[address] = (Process(target=self.handle_client_connection, args=(connection, address)), Queue(maxsize=10))
+                    self.client_processes[address][0].start()
+                except Exception as e:
+                    pass
             
             try:
-                request = self.client_request_queue.get_nowait()
-                match request[0]:
-                    case 'CODE_STOP':
-                        print('got CODE_STOP. Shutting down...')
-                        break
-                    case 'CODE_END':
-                        print(f'{request[1]} ended their connection.')
-                    case 'CODE_QUERY':
-                        print(f'{request[1]} want to know what is in a slot')
-                    case 'CODE_PULL':
-                        print(f'{request[1]} wants to pull from a slot.')
-                    case 'CODE_PUSH':
-                        print(f'{request[1]} wants to put items in a slot.')
-                    case 'CODE_EMPTY':
-                        print(f'{request[1]} wants to empty a slot.')
-                    case 'CODE_SET':
-                        print(f'{request[1]} wants to set the data for a slot.')
-                    case 'CODE_REPLACE':
-                        print(f'{request[1]} wants to replace a slot.')
-                    case 'CLEANUP':
-                        print(f'Cleaning up {request[1]}')
-                        self.cleanup_client_connection(request[1])
-                    case _:
-                        print(f'got something else from {request[1]}: {request[0]}')
+                request = REQUEST(self.client_request_queue.get_nowait()) 
+                self.handle_client_request(request)
             except Empty:
+                if self.STOP:
+                    break
                 pass
 
         self.CLIENT_SOCKET.close()
         self.CONTROLLER_SOCKET.close()
         return 1
 
-    def handle_client_connection(self, conn, addr): #TODO needs a rework
+    def handle_client_connection(self, conn, addr): #TODO needs a rework... or does it?
         while True:
             data = conn.recv(1024).decode()
             if data in self.REQUEST_CODES:
@@ -99,6 +93,32 @@ class SERVER:
         conn.close()
         self.client_request_queue.put(['CLEANUP', addr])
         return 1
+
+    def handle_client_request(self, request): # this is where we will push into the controller queue
+        match request.code:
+            case 'CODE_STOP':
+                print('got CODE_STOP. Shutting down...')
+                self.STOP = True
+            case 'CODE_END':
+                print(f'{request.address} ended their connection.')
+            case 'CODE_QUERY':
+                print(f'{request.address} wants to know what is in a slot.')
+            case 'CODE_PULL':
+                print(f'{request.address} wants to pull from a slot.')
+            case 'CODE_PUSH':
+                print(f'{request.address} wants to put items in a slot.')
+            case 'CODE_EMPTY':
+                print(f'{request.address} wants to empty a slot.')
+            case 'CODE_SET':
+                print(f'{request.address} wants to set the data for a slot.')
+            case 'CODE_REPLACE':
+                print(f'{request.address} wants to replace a slot.')
+            case 'CLEANUP':
+                print(f'Cleaning up {request.address}...')
+                self.cleanup_client_connection(request.address)
+                print(f'Cleaned {request.address}.')
+            case _:
+                print(f'got something else from {request.address}: {request.code}')
 
     def spawn_controller_process(self, controller_socket):
         return Process(target=self.handle_controller, args=(controller_socket,))
