@@ -11,9 +11,10 @@ import sys
 
 
 class SERVER:
+    
     REQUEST_CODES = [
         'CODE_STOP',
-        'CODE_END'
+        'CODE_END',
         'CODE_QUERY',
         'CODE_PULL',
         'CODE_PUSH',
@@ -21,6 +22,7 @@ class SERVER:
         'CODE_REPLACE',
         'CODE_SET'
     ]
+    
     def __init__(self):
         self.HOST = '127.0.0.1'
         self.PORT = 47468
@@ -38,8 +40,8 @@ class SERVER:
         self.prepare_client_socket()
         self.connect_controller()
         self.controller_process = self.spawn_controller_process(self.CONTROLLER_SOCKET)
-        self.controller_process.run()
-        
+        # self.controller_process.run()
+        print("TEST")
         while True:
             connection = None
             address = None
@@ -47,10 +49,9 @@ class SERVER:
             try:
                 connection, address = self.CLIENT_SOCKET.accept()
                 connection.settimeout(None)
-                self.client_processes[address] = (Process(target=self.handle_connection, args=(connection, address)), Queue(maxsize=10))
+                self.client_processes[address] = (Process(target=self.handle_client, args=(connection, address)).start(), Queue(maxsize=10))
             except TimeoutError as e:
                 pass
-            
             try:
                 request = self.client_request_queue.get_nowait()
             except Empty as e:
@@ -60,22 +61,23 @@ class SERVER:
         print(f"count = {self.COUNT}")
         return 1
 
-    def handle_connection(self, conn, addr): #TODO needs a rework
+    def handle_client(self, conn, addr): #TODO Send client requests to controller and handle the controller response
         while True:
-            data = conn.recv(1024).decode()
+            data = conn.recv(4096).decode()
+            print(data)
             if data in self.REQUEST_CODES:
                 print(data)
                 response = f'Got request {data} from {addr}'
                 conn.send(response.encode())
+                break
             else:
                 response = f'Got something weird: {data} from {addr}'
                 conn.send(response.encode())
-            break
-        conn.close()
+                break
         return 1
 
     def spawn_controller_process(self, controller_socket):
-        return Process(target=self.handle_controller, args=(controller_socket,))
+        return Process(target=self.handle_controller, args=(controller_socket,)).start()
 
     def handle_controller(self, connection):
         while True:
@@ -92,13 +94,13 @@ class SERVER:
 
     def prepare_client_socket(self):
         self.CLIENT_SOCKET.bind((self.HOST, self.PORT))
-        self.CLIENT_SOCKET.settimeout(0)
+        self.CLIENT_SOCKET.settimeout(5)
         self.CLIENT_SOCKET.listen()
 
     def connect_controller(self):
         while True:
             try:
-                self.CONTROLLER_SOCKET.connect(self.HOST)
+                self.CONTROLLER_SOCKET.connect((self.HOST, self.CONTROLLER_PORT))
             except:
                 print('Attempting connection to controller...')
                 continue
@@ -112,6 +114,7 @@ class SERVER:
             self.client_processes.pop(address)
         else:
             raise KeyError
+
 
 if __name__ == "__main__":
     s = SERVER()

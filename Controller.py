@@ -10,6 +10,7 @@ import os
 
 # warehouse of aisles of rows of slots of item
 class WAREHOUSE:
+    
     def __init__(self, name=None, aisles=None) -> None:
         if name is None:
             self.name = ''
@@ -103,6 +104,7 @@ class WAREHOUSE:
 
 
 class JSON_HANDLER:
+    
     FILENAME = 'WAREHOUSE.txt'
     YES_NO = ['y', 'n']
 
@@ -174,13 +176,13 @@ class JSON_HANDLER:
         # slots info
         while True:
             all_equivalent = input('Will all aisles and rows have the same amount of slots?(y/n):')[0].lower()
-            if all_equivalent in self.YES_NO:
+            if all_equivalent[0].lower() in self.YES_NO:
                 break
             else:
                 print('Bad input: please enter y or n')
 
         # add slots
-        if all_equivalent == 'y':
+        if all_equivalent[0].lower() == 'y':
             while True:
                 try:
                     num_slots = int(input('Enter the number of slots for all rows (minimum 1): '))
@@ -260,7 +262,10 @@ class JSON_HANDLER:
 
 #TODO inside
 class SERVER:
+    
     REQUEST_CODES = [
+        'CODE_STOP',
+        'CODE_END'
         'CODE_QUERY',
         'CODE_PULL',
         'CODE_PUSH',
@@ -271,7 +276,7 @@ class SERVER:
 
     def __init__(self, HOST=None, PORT=None) -> None:
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.SOCKET.settimeout(0)
+        self.SOCKET.settimeout(5)
         if HOST is None:
             self.HOST = '127.0.0.1'
         else:
@@ -296,28 +301,32 @@ class SERVER:
                 while True:
                     request = conn.recv(1024).decode()
                     if request in self.REQUEST_CODES:
-                        response = self.handle()
+                        response = self.handle(request)
                         conn.send(response)
 
-    #TODO cases
-    def handle(self, request_type, data=None):
-        return(b'GOOD')
+
+    def handle(self, request_type, data=None): # TODO: Handle requests from the server and respond
         match request_type:
-            case 'CODE_QUERY': # return slot data. perhaps warehouse, aisle, or row too?
-                pass
-            case 'CODE_PULL': # pull items from a slot (reduce quantity)
-                pass
-            case 'CODE_PUSH': # place additional items in a slot (increase quantity)
-                pass
-            case 'CODE_EMPTY': # clear a slot of all values
-                pass
-            case 'CODE_REPLACE': # same as clear and set for all values
-                pass
-            case 'CODE_SET': # set a slot value
-                pass
+            case 'CODE_STOP': # return slot data. perhaps warehouse, aisle, or row too?
+                return 'CODE_STOP'
+            case 'CODE_END': # pull items from a slot (reduce quantity)
+                return 'CODE_END'
+            case 'CODE_QUERY': # place additional items in a slot (increase quantity)
+                return 'CODE_QUERY'
+            case 'CODE_PULL': # clear a slot of all values
+                return 'CODE_PULL'
+            case 'CODE_PUSH': # same as clear and set for all values
+                return 'CODE_PUSH'
+            case 'CODE_EMPTY': # set a slot value
+                return 'CODE_EMPTY'
+            case 'CODE_REPLACE':
+                return 'CODE_REPLACE'
+            case 'CODE_SET':
+                return 'CODE_SET'
             case _:
-                # bad request
-                pass
+                return 'Something strange happened here...'
+            
 
 if __name__ == '__main__':
-    handler = JSON_HANDLER()
+    server = SERVER()
+    server.run()
